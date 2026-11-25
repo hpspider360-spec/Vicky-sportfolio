@@ -1,0 +1,6 @@
+{
+  "name": "Vignesh — Cinematic 3D Developer Hero",
+  "description": "Real-time 3D architectural developer workspace featuring a seated avatar, locked cinema camera, 60-30-10 floating color palette cards, and a seamless 24-second environmental color transformation loop.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

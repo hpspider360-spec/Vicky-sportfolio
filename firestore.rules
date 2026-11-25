@@ -1,0 +1,433 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Global safety net — default deny everything unless explicitly allowed below
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // ==================== GLOBAL PRIMITIVES ====================
+    function isValidId(id) {
+      return id is string && id.size() >= 1 && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function incoming() {
+      return request.resource.data;
+    }
+
+    function existing() {
+      return resource.data;
+    }
+
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Strictly restrict admin owner writes to the single verified owner email
+    function isAdmin() {
+      return isSignedIn()
+        && request.auth.token.email_verified == true
+        && request.auth.token.email == 'vigneshsivan2001@gmail.com';
+    }
+
+    function isStringWithin(val, minLen, maxLen) {
+      return val is string && val.size() >= minLen && val.size() <= maxLen;
+    }
+
+    function isBoundedStringList(val, maxItems) {
+      return val is list
+        && val.size() <= maxItems
+        && (val.size() == 0 || (val[0] is string && val[0].size() >= 1 && val[0].size() <= 300));
+    }
+
+    // ==================== VALIDATION BLUEPRINTS ====================
+    function isValidPortfolioProfile(data) {
+      return data.keys().hasAll([
+        'name',
+        'role',
+        'tagline',
+        'introductionPrefix',
+        'introductionHighlight1',
+        'introductionMid',
+        'introductionHighlight2',
+        'introductionMid2',
+        'introductionHighlight3',
+        'introductionSuffix',
+        'focus',
+        'experienceSummary',
+        'shortLocation',
+        'availability',
+        'educationDegree',
+        'educationCollege',
+        'educationYear',
+        'resumePdfUrl',
+        'resumeFileName',
+        'resumeStatusNote',
+        'fullName',
+        'contactEmail',
+        'githubUrl',
+        'linkedinUrl',
+        'location',
+        'contactMessage',
+        'seededProjects',
+        'seededSkills',
+        'seededExperiences',
+        'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'name',
+        'role',
+        'tagline',
+        'introductionPrefix',
+        'introductionHighlight1',
+        'introductionMid',
+        'introductionHighlight2',
+        'introductionMid2',
+        'introductionHighlight3',
+        'introductionSuffix',
+        'focus',
+        'experienceSummary',
+        'shortLocation',
+        'availability',
+        'educationDegree',
+        'educationCollege',
+        'educationYear',
+        'resumePdfUrl',
+        'resumeFileName',
+        'resumeStatusNote',
+        'fullName',
+        'contactEmail',
+        'githubUrl',
+        'linkedinUrl',
+        'location',
+        'contactMessage',
+        'seededProjects',
+        'seededSkills',
+        'seededExperiences',
+        'updatedAt'
+      ])
+      && isStringWithin(data.name, 1, 80)
+      && isStringWithin(data.role, 1, 120)
+      && isBoundedStringList(data.tagline, 6)
+      && isStringWithin(data.introductionPrefix, 0, 200)
+      && isStringWithin(data.introductionHighlight1, 0, 120)
+      && isStringWithin(data.introductionMid, 0, 200)
+      && isStringWithin(data.introductionHighlight2, 0, 120)
+      && isStringWithin(data.introductionMid2, 0, 200)
+      && isStringWithin(data.introductionHighlight3, 0, 120)
+      && isStringWithin(data.introductionSuffix, 0, 40)
+      && isStringWithin(data.focus, 1, 120)
+      && isStringWithin(data.experienceSummary, 1, 120)
+      && isStringWithin(data.shortLocation, 1, 120)
+      && isStringWithin(data.availability, 1, 120)
+      && isStringWithin(data.educationDegree, 1, 160)
+      && isStringWithin(data.educationCollege, 1, 180)
+      && isStringWithin(data.educationYear, 1, 20)
+      && isStringWithin(data.resumePdfUrl, 0, 500)
+      && isStringWithin(data.resumeFileName, 1, 120)
+      && isStringWithin(data.resumeStatusNote, 0, 500)
+      && isStringWithin(data.fullName, 1, 80)
+      && isStringWithin(data.contactEmail, 3, 160)
+      && isStringWithin(data.githubUrl, 0, 300)
+      && isStringWithin(data.linkedinUrl, 0, 300)
+      && isStringWithin(data.location, 1, 160)
+      && isStringWithin(data.contactMessage, 0, 600)
+      && data.seededProjects is bool
+      && data.seededSkills is bool
+      && data.seededExperiences is bool
+      && data.updatedAt == request.time;
+    }
+
+    function isValidPortfolioResume(data) {
+      return data.keys().hasAll([
+        'sourceType',
+        'fileName',
+        'pdfUrl',
+        'pdfBase64',
+        'fileSizeBytes',
+        'statusNote',
+        'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'sourceType',
+        'fileName',
+        'pdfUrl',
+        'pdfBase64',
+        'fileSizeBytes',
+        'statusNote',
+        'updatedAt'
+      ])
+      && data.sourceType in ['none', 'upload', 'url']
+      && isStringWithin(data.fileName, 1, 140)
+      && isStringWithin(data.pdfUrl, 0, 500)
+      && isStringWithin(data.pdfBase64, 0, 950000)
+      && data.fileSizeBytes is number
+      && data.fileSizeBytes >= 0
+      && data.fileSizeBytes <= 700000
+      && isStringWithin(data.statusNote, 0, 500)
+      && data.updatedAt == request.time;
+    }
+
+    function isValidProject(data) {
+      return data.keys().hasAll([
+        'order',
+        'number',
+        'title',
+        'category',
+        'status',
+        'description',
+        'technologies',
+        'contribution',
+        'imageUrl',
+        'liveUrl',
+        'githubUrl',
+        'published',
+        'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'order',
+        'number',
+        'title',
+        'category',
+        'status',
+        'description',
+        'technologies',
+        'contribution',
+        'imageUrl',
+        'liveUrl',
+        'githubUrl',
+        'published',
+        'updatedAt'
+      ])
+      && data.order is number
+      && data.order >= 0
+      && data.order <= 1000
+      && isStringWithin(data.number, 1, 12)
+      && isStringWithin(data.title, 1, 140)
+      && isStringWithin(data.category, 1, 120)
+      && data.status in ['Live', 'In Development', 'Academic Project']
+      && isStringWithin(data.description, 1, 800)
+      && isBoundedStringList(data.technologies, 20)
+      && isStringWithin(data.contribution, 1, 800)
+      && isStringWithin(data.imageUrl, 0, 500)
+      && isStringWithin(data.liveUrl, 0, 500)
+      && isStringWithin(data.githubUrl, 0, 500)
+      && data.published is bool
+      && data.updatedAt == request.time;
+    }
+
+    function isValidSkillCategory(data) {
+      return data.keys().hasAll(['order', 'index', 'title', 'skills', 'published', 'updatedAt'])
+        && data.keys().hasOnly(['order', 'index', 'title', 'skills', 'published', 'updatedAt'])
+        && data.order is number
+        && data.order >= 0
+        && data.order <= 1000
+        && isStringWithin(data.index, 1, 12)
+        && isStringWithin(data.title, 1, 120)
+        && isBoundedStringList(data.skills, 30)
+        && data.published is bool
+        && data.updatedAt == request.time;
+    }
+
+    function isValidExperience(data) {
+      return data.keys().hasAll([
+        'order',
+        'index',
+        'company',
+        'jobTitle',
+        'department',
+        'industry',
+        'duration',
+        'responsibilities',
+        'published',
+        'updatedAt'
+      ])
+      && data.keys().hasOnly([
+        'order',
+        'index',
+        'company',
+        'jobTitle',
+        'department',
+        'industry',
+        'duration',
+        'responsibilities',
+        'published',
+        'updatedAt'
+      ])
+      && data.order is number
+      && data.order >= 0
+      && data.order <= 1000
+      && isStringWithin(data.index, 1, 12)
+      && isStringWithin(data.company, 1, 160)
+      && isStringWithin(data.jobTitle, 1, 140)
+      && isStringWithin(data.department, 1, 140)
+      && isStringWithin(data.industry, 1, 160)
+      && isStringWithin(data.duration, 1, 80)
+      && isBoundedStringList(data.responsibilities, 25)
+      && data.published is bool
+      && data.updatedAt == request.time;
+    }
+
+    // ==================== PORTFOLIO SINGLETON PROFILE ====================
+    match /portfolio/{docId} {
+      allow get: if isValidId(docId) && docId == 'profile';
+      allow list: if false;
+
+      allow create: if isAdmin()
+        && isValidId(docId)
+        && docId == 'profile'
+        && isValidPortfolioProfile(incoming());
+
+      allow update: if isValidPortfolioProfile(incoming())
+        && isAdmin()
+        && isValidId(docId)
+        && docId == 'profile'
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'name',
+          'role',
+          'tagline',
+          'introductionPrefix',
+          'introductionHighlight1',
+          'introductionMid',
+          'introductionHighlight2',
+          'introductionMid2',
+          'introductionHighlight3',
+          'introductionSuffix',
+          'focus',
+          'experienceSummary',
+          'shortLocation',
+          'availability',
+          'educationDegree',
+          'educationCollege',
+          'educationYear',
+          'resumePdfUrl',
+          'resumeFileName',
+          'resumeStatusNote',
+          'fullName',
+          'contactEmail',
+          'githubUrl',
+          'linkedinUrl',
+          'location',
+          'contactMessage',
+          'seededProjects',
+          'seededSkills',
+          'seededExperiences',
+          'updatedAt'
+        ]);
+
+      allow delete: if false;
+    }
+
+    // ==================== RESUME PDF SINGLETON DOCUMENT ====================
+    match /resume/{docId} {
+      allow get: if isValidId(docId) && docId == 'current';
+      allow list: if false;
+
+      allow create: if isAdmin()
+        && isValidId(docId)
+        && docId == 'current'
+        && isValidPortfolioResume(incoming());
+
+      allow update: if isValidPortfolioResume(incoming())
+        && isAdmin()
+        && isValidId(docId)
+        && docId == 'current'
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'sourceType',
+          'fileName',
+          'pdfUrl',
+          'pdfBase64',
+          'fileSizeBytes',
+          'statusNote',
+          'updatedAt'
+        ]);
+
+      allow delete: if isAdmin() && isValidId(docId) && docId == 'current';
+    }
+
+    // ==================== SELECTED PROJECTS ====================
+    match /projects/{projectId} {
+      allow get: if isValidId(projectId) && (isAdmin() || resource.data.published == true);
+      allow list: if isAdmin() || resource.data.published == true;
+
+      allow create: if isAdmin()
+        && isValidId(projectId)
+        && isValidProject(incoming());
+
+      allow update: if isValidProject(incoming())
+        && isAdmin()
+        && isValidId(projectId)
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'order',
+          'number',
+          'title',
+          'category',
+          'status',
+          'description',
+          'technologies',
+          'contribution',
+          'imageUrl',
+          'liveUrl',
+          'githubUrl',
+          'published',
+          'updatedAt'
+        ]);
+
+      allow delete: if isAdmin() && isValidId(projectId);
+    }
+
+    // ==================== TECHNICAL SKILLS ====================
+    match /skills/{skillId} {
+      allow get: if isValidId(skillId) && (isAdmin() || resource.data.published == true);
+      allow list: if isAdmin() || resource.data.published == true;
+
+      allow create: if isAdmin()
+        && isValidId(skillId)
+        && isValidSkillCategory(incoming());
+
+      allow update: if isValidSkillCategory(incoming())
+        && isAdmin()
+        && isValidId(skillId)
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'order',
+          'index',
+          'title',
+          'skills',
+          'published',
+          'updatedAt'
+        ]);
+
+      allow delete: if isAdmin() && isValidId(skillId);
+    }
+
+    // ==================== PROFESSIONAL EXPERIENCES ====================
+    match /experiences/{experienceId} {
+      allow get: if isValidId(experienceId) && (isAdmin() || resource.data.published == true);
+      allow list: if isAdmin() || resource.data.published == true;
+
+      allow create: if isAdmin()
+        && isValidId(experienceId)
+        && isValidExperience(incoming());
+
+      allow update: if isValidExperience(incoming())
+        && isAdmin()
+        && isValidId(experienceId)
+        && incoming().diff(existing()).affectedKeys().hasOnly([
+          'order',
+          'index',
+          'company',
+          'jobTitle',
+          'department',
+          'industry',
+          'duration',
+          'responsibilities',
+          'published',
+          'updatedAt'
+        ]);
+
+      allow delete: if isAdmin() && isValidId(experienceId);
+    }
+  }
+}

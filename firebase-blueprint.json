@@ -1,0 +1,202 @@
+{
+  "entities": {
+    "PortfolioProfile": {
+      "title": "PortfolioProfile",
+      "description": "Publicly displayed profile, education, resume configuration, and public contact hyperlinks managed strictly by the portfolio owner.",
+      "type": "object",
+      "properties": {
+        "name": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "role": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "tagline": { "type": "array", "description": "Up to 6 short descriptor phrases" },
+        "introductionPrefix": { "type": "string", "maxLength": 200 },
+        "introductionHighlight1": { "type": "string", "maxLength": 120 },
+        "introductionMid": { "type": "string", "maxLength": 200 },
+        "introductionHighlight2": { "type": "string", "maxLength": 120 },
+        "introductionMid2": { "type": "string", "maxLength": 200 },
+        "introductionHighlight3": { "type": "string", "maxLength": 120 },
+        "introductionSuffix": { "type": "string", "maxLength": 40 },
+        "focus": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "experienceSummary": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "shortLocation": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "availability": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "educationDegree": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "educationCollege": { "type": "string", "minLength": 1, "maxLength": 180 },
+        "educationYear": { "type": "string", "minLength": 1, "maxLength": 20 },
+        "resumePdfUrl": { "type": "string", "maxLength": 500 },
+        "resumeFileName": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "resumeStatusNote": { "type": "string", "maxLength": 500 },
+        "fullName": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "contactEmail": { "type": "string", "minLength": 3, "maxLength": 160 },
+        "githubUrl": { "type": "string", "maxLength": 300 },
+        "linkedinUrl": { "type": "string", "maxLength": 300 },
+        "location": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "contactMessage": { "type": "string", "maxLength": 600 },
+        "seededProjects": { "type": "boolean" },
+        "seededSkills": { "type": "boolean" },
+        "seededExperiences": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "name",
+        "role",
+        "tagline",
+        "introductionPrefix",
+        "introductionHighlight1",
+        "introductionMid",
+        "introductionHighlight2",
+        "introductionMid2",
+        "introductionHighlight3",
+        "introductionSuffix",
+        "focus",
+        "experienceSummary",
+        "shortLocation",
+        "availability",
+        "educationDegree",
+        "educationCollege",
+        "educationYear",
+        "resumePdfUrl",
+        "resumeFileName",
+        "resumeStatusNote",
+        "fullName",
+        "contactEmail",
+        "githubUrl",
+        "linkedinUrl",
+        "location",
+        "contactMessage",
+        "seededProjects",
+        "seededSkills",
+        "seededExperiences",
+        "updatedAt"
+      ]
+    },
+    "PortfolioResume": {
+      "title": "PortfolioResume",
+      "description": "Published resume PDF document (either uploaded PDF base64 payload or external hosted PDF link) managed strictly by the portfolio owner.",
+      "type": "object",
+      "properties": {
+        "sourceType": {
+          "type": "string",
+          "enum": ["none", "upload", "url"]
+        },
+        "fileName": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "pdfUrl": { "type": "string", "maxLength": 500 },
+        "pdfBase64": { "type": "string", "maxLength": 950000 },
+        "fileSizeBytes": { "type": "number" },
+        "statusNote": { "type": "string", "maxLength": 500 },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "sourceType",
+        "fileName",
+        "pdfUrl",
+        "pdfBase64",
+        "fileSizeBytes",
+        "statusNote",
+        "updatedAt"
+      ]
+    },
+    "Project": {
+      "title": "Project",
+      "description": "An academic or software development project displayed in the Selected Projects section.",
+      "type": "object",
+      "properties": {
+        "order": { "type": "number" },
+        "number": { "type": "string", "minLength": 1, "maxLength": 12 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "category": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "status": {
+          "type": "string",
+          "enum": ["Live", "In Development", "Academic Project"]
+        },
+        "description": { "type": "string", "minLength": 1, "maxLength": 800 },
+        "technologies": { "type": "array", "description": "Up to 20 technology names" },
+        "contribution": { "type": "string", "minLength": 1, "maxLength": 800 },
+        "imageUrl": { "type": "string", "maxLength": 500 },
+        "liveUrl": { "type": "string", "maxLength": 500 },
+        "githubUrl": { "type": "string", "maxLength": 500 },
+        "published": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "order",
+        "number",
+        "title",
+        "category",
+        "status",
+        "description",
+        "technologies",
+        "contribution",
+        "imageUrl",
+        "liveUrl",
+        "githubUrl",
+        "published",
+        "updatedAt"
+      ]
+    },
+    "SkillCategory": {
+      "title": "SkillCategory",
+      "description": "A categorized group of technical skills displayed in the Technical Skills section.",
+      "type": "object",
+      "properties": {
+        "order": { "type": "number" },
+        "index": { "type": "string", "minLength": 1, "maxLength": 12 },
+        "title": { "type": "string", "minLength": 1, "maxLength": 120 },
+        "skills": { "type": "array", "description": "Up to 30 skill entries" },
+        "published": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["order", "index", "title", "skills", "published", "updatedAt"]
+    },
+    "Experience": {
+      "title": "Experience",
+      "description": "A verified professional work experience record displayed in the Professional Experience section.",
+      "type": "object",
+      "properties": {
+        "order": { "type": "number" },
+        "index": { "type": "string", "minLength": 1, "maxLength": 12 },
+        "company": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "jobTitle": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "department": { "type": "string", "minLength": 1, "maxLength": 140 },
+        "industry": { "type": "string", "minLength": 1, "maxLength": 160 },
+        "duration": { "type": "string", "minLength": 1, "maxLength": 80 },
+        "responsibilities": { "type": "array", "description": "Up to 25 responsibility entries" },
+        "published": { "type": "boolean" },
+        "updatedAt": { "type": "string", "format": "date-time" }
+      },
+      "required": [
+        "order",
+        "index",
+        "company",
+        "jobTitle",
+        "department",
+        "industry",
+        "duration",
+        "responsibilities",
+        "published",
+        "updatedAt"
+      ]
+    }
+  },
+  "firestore": {
+    "/portfolio/{docId}": {
+      "schema": { "$ref": "#/entities/PortfolioProfile" },
+      "description": "Singleton public portfolio configuration document at /portfolio/profile."
+    },
+    "/resume/{docId}": {
+      "schema": { "$ref": "#/entities/PortfolioResume" },
+      "description": "Singleton public resume PDF document at /resume/current."
+    },
+    "/projects/{projectId}": {
+      "schema": { "$ref": "#/entities/Project" },
+      "description": "Published portfolio project cards."
+    },
+    "/skills/{skillId}": {
+      "schema": { "$ref": "#/entities/SkillCategory" },
+      "description": "Published technical skill categories."
+    },
+    "/experiences/{experienceId}": {
+      "schema": { "$ref": "#/entities/Experience" },
+      "description": "Published professional work experience entries."
+    }
+  }
+}
